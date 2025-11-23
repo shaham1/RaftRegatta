@@ -1,11 +1,11 @@
+    
+import React from 'react';
 
-
-export default function home() {
+export default async function Main() {
 
   return (
     <div>
-      test 1
+      <h1>Test 2</h1>
     </div>
-  )
+  );
 }
-
