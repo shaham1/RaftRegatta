@@ -1,12 +1,16 @@
-import "dotenv/config";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from '@prisma/config';
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
-  migrations: {
-    path: "prisma/migrations",
-  },
-  datasource: {
-    url: env("POSTGRES_URL"),
+  // @ts-expect-error
+  earlyAccess: true,
+  
+  datasources: {
+    db: {
+      provider: 'postgresql',
+      // The Pooled URL (for the app to run fast)
+      url: process.env.POSTGRES_URL, 
+      // The Direct URL (for migrations/push to work without timeout)
+      directUrl: process.env.POSTGRES_URL_NON_POOLING,
+    },
   },
 });
