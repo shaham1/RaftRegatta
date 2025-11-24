@@ -13,7 +13,7 @@ export async function GET() {
       },
 
       include: {
-        round: true
+        round: false
       }
     });
 
