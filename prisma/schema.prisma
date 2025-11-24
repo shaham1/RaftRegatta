@@ -7,3 +7,35 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum RoundStatus {
+  OPEN
+  CLOSED
+}
+
+model Teams {
+  id       String @id @default(cuid())
+  teamNo   Int    @unique 
+  teamName String @unique
+  apiKey   String @unique
+}
+
+model Round {
+  id          Int         @id @default(autoincrement())
+  itemImageId Int
+  status      RoundStatus @default(OPEN)
+  bids        Bid[]
+}
+
+model Bid {
+  id        Int    @id @default(autoincrement())
+  roundId   Int
+  teamNo    Int
+  teamName  String
+  item      String 
+  amount    Float
+
+  round     Round  @relation(fields: [roundId], references: [id])
+
+  @@unique([roundId, teamNo]) 
+}
