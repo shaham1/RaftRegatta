@@ -7,34 +7,55 @@ datasource db {
   url = env("POSTGRES_URL") 
   directUrl = env("POSTGRES_URL_NON_POOLING") 
 }
+
 enum RoundStatus {
   OPEN
   CLOSED
 }
 
+model ItemCategory {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  images      ItemImage[]
+}
+
+model ItemImage {
+  id         Int          @id @default(autoincrement())
+  categoryId Int
+  imageData  String       
+  category   ItemCategory @relation(fields: [categoryId], references: [id])
+  rounds     Round[]
+}
+
 model Teams {
   id       String @id @default(cuid())
-  teamNo   Int    @unique 
-  teamName String @unique
+  teamNo   Int    @unique
+  teamName String
   apiKey   String @unique
 }
 
 model Round {
-  id          Int         @id @default(autoincrement())
-  itemImageId Int
-  status      RoundStatus @default(OPEN)
-  bids        Bid[]
+  id          Int        @id @default(autoincrement())
+  itemImageId Int?
+  itemImage   ItemImage? @relation(fields: [itemImageId], references: [id])
+  status    RoundStatus @default(OPEN)
+  startTime DateTime    @default(now())
+  endTime   DateTime?
+
+  bids Bid[]
 }
 
 model Bid {
-  id        Int    @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   roundId   Int
   teamNo    Int
   teamName  String
-  item      String 
+  item      String
   amount    Float
+  createdAt DateTime @default(now())
 
-  round     Round  @relation(fields: [roundId], references: [id])
+  round Round @relation(fields: [roundId], references: [id])
 
-  @@unique([roundId, teamNo]) 
+  @@unique([roundId, teamNo])
 }
