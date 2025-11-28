@@ -82,10 +82,10 @@ export default function AuctionDashboard() {
         });
         setLiveBids([]); 
       } else {
-        setStatusMessage(`❌ Error: ${data.error}`);
+        setStatusMessage(`Error: ${data.error}`);
       }
     } catch (error) {
-      setStatusMessage("❌ Network Error");
+      setStatusMessage("Network Error");
     }
   };
 
@@ -167,7 +167,7 @@ export default function AuctionDashboard() {
       <div className={`${theme.cardBg} border-b ${theme.border} p-4 flex justify-between items-center shadow-md z-10 sticky top-0`}>
         <div>
           <h1 className={`text-2xl font-bold ${theme.accent} tracking-tighter flex items-center gap-3`}>
-            <span className="text-3xl">☢</span> RAFT REGATTA COMMAND
+            <span className="text-3xl">☢</span> RAFT REGATTA AI AUCTION
           </h1>
           <p className={`text-xs ${theme.subText} mt-1 font-bold`}>STATUS: {statusMessage}</p>
         </div>
@@ -217,7 +217,7 @@ export default function AuctionDashboard() {
                     : theme.buttonPrimary
                   }`}
                 >
-                  INITIATE ROUND
+                  START ROUND
                 </button>
                 <button 
                   onClick={handleCloseRound}
@@ -228,7 +228,7 @@ export default function AuctionDashboard() {
                     : 'bg-zinc-700 hover:bg-zinc-600 text-white'
                   }`}
                 >
-                  TERMINATE ROUND
+                  CLOSE ROUND
                 </button>
              </div>
           </div>
@@ -238,7 +238,7 @@ export default function AuctionDashboard() {
             <div className={`p-4 border-b ${theme.border} flex justify-between items-center`}>
               <h2 className={`text-lg font-bold flex items-center gap-2 ${theme.text}`}>
                 <span className={`w-3 h-3 rounded-full ${currentRound?.status === 'OPEN' ? 'bg-red-600 animate-ping' : 'bg-gray-600'}`}></span>
-                INCOMING DATA STREAM
+                INCOMING BIDS STREAM
               </h2>
               {currentRound?.active_category && currentRound.status === 'OPEN' && (
                 <span className={`px-3 py-1 border ${theme.border} text-xs font-bold uppercase tracking-wide ${theme.accent}`}>
@@ -284,7 +284,7 @@ export default function AuctionDashboard() {
              <table className="w-full text-left text-sm">
                 <thead className={`${theme.tableHeader} sticky top-0 uppercase text-xs tracking-wider`}>
                   <tr>
-                    <th className="p-3 font-normal">Rnd</th>
+                    <th className="p-3 font-normal">Round</th>
                     <th className="p-3 font-normal">Winner</th>
                     <th className="p-3 font-normal text-right">Bid</th>
                   </tr>
