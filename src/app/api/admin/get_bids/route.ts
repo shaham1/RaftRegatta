@@ -5,6 +5,9 @@ import { RoundStatus } from '@prisma/client';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+
+  // add administatoro authentication
+
   try {
     const currentRound = await prisma.round.findFirst({
         where: { status: RoundStatus.OPEN }

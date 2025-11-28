@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { RoundStatus } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
+
+  // also add administrator authentication
+
   try {
     await prisma.round.updateMany({
       where: { status: RoundStatus.OPEN },
