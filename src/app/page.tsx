@@ -39,7 +39,7 @@ export default function AuctionDashboard() {
 
   const checkStatus = useCallback(async () => {
     try {
-      const resBids = await fetch('/api/admin/get-bids');
+      const resBids = await fetch('/api/admin/get_bids');
       if (resBids.ok) {
         const data = await resBids.json();
         setLiveBids(data);
@@ -64,7 +64,7 @@ export default function AuctionDashboard() {
   const handleStartRound = async () => {
     setStatusMessage("Starting Round...");
     try {
-      const res = await fetch('/api/admin/start-round', {
+      const res = await fetch('/api/admin/start_round', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}) 
@@ -92,7 +92,7 @@ export default function AuctionDashboard() {
   const handleCloseRound = async () => {
     setStatusMessage("Closing Round...");
     try {
-      const res = await fetch('/api/admin/close-round', { method: 'POST' });
+      const res = await fetch('/api/admin/close_round', { method: 'POST' });
       if (res.ok) {
         setStatusMessage("🛑 Round Closed.");
         if (currentRound) {
