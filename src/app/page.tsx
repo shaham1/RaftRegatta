@@ -263,7 +263,7 @@ export default function AuctionDashboard() {
                         <p className={`text-xs ${theme.subText}`}>Prediction: {bid.item}</p>
                       </div>
                       <div className="text-right">
-                        <p className={`text-2xl font-bold ${theme.accent}`}>${bid.amount.toFixed(2)}</p>
+                        <p className={`text-2xl font-bold ${theme.accent}`}>{bid.amount.toFixed(2)}</p>
                         <p className={`text-[10px] ${theme.subText} uppercase`}>ID: {bid.id}</p>
                       </div>
                    </div>
