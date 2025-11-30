@@ -29,8 +29,8 @@ model ItemImage {
 }
 
 model Teams {
-  id       String @id @default(cuid())
-  teamNo   Int    @unique
+  id       Int @id @default(autoincrement())
+  teamNo   String    @unique
   teamName String
   apiKey   String @unique
 }
@@ -49,7 +49,7 @@ model Round {
 model Bid {
   id        Int      @id @default(autoincrement())
   roundId   Int
-  teamNo    Int
+  teamNo    String
   teamName  String
   item      String
   amount    Float
