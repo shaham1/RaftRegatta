@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import Image from 'next/image';
 
 // --- Types ---
 type Bid = {
@@ -164,23 +165,28 @@ export default function AuctionDashboard() {
     <div className={`min-h-screen ${theme.bg} ${theme.text} font-mono flex flex-col transition-colors duration-300`}>
       
       {/* TOP BAR */}
-      <div className={`${theme.cardBg} border-b ${theme.border} p-4 flex justify-between items-center shadow-md z-10 sticky top-0`}>
-        <div>
+      <div className={`${theme.cardBg} border-b ${theme.border} p-4 flex justify-between items-center shadow-md z-10 sticky top-0 relative`}>
+        
+        {/* LEFT: TITLE & STATUS */}
+        <div className="z-20">
           <h1 className={`text-2xl font-bold ${theme.accent} tracking-tighter flex items-center gap-3`}>
             <span className="text-3xl">☢</span> RAFT REGATTA AI AUCTION
           </h1>
           <p className={`text-xs ${theme.subText} mt-1 font-bold`}>STATUS: {statusMessage}</p>
         </div>
         
-        <div className="flex items-center gap-6">
-          {/* TIMER DISPLAY */}
+        {/* CENTER: TIMER (Absolute Positioning for perfect centering) */}
+        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
           <div className={`flex flex-col items-center justify-center px-6 py-2 rounded border ${theme.border} ${isDarkMode ? 'bg-black' : 'bg-gray-50'}`}>
              <span className={`text-[10px] ${theme.subText} uppercase tracking-widest`}>Round Timer</span>
              <span className={`text-3xl font-bold font-mono ${currentRound?.status === 'OPEN' ? theme.accent : theme.subText}`}>
                {elapsedTime}
              </span>
           </div>
+        </div>
 
+        {/* RIGHT: THEME TOGGLE & LOGO */}
+        <div className="flex items-center gap-6 z-20">
           {/* THEME TOGGLE */}
           <button 
             onClick={() => setIsDarkMode(!isDarkMode)}
@@ -189,6 +195,18 @@ export default function AuctionDashboard() {
           >
             {isDarkMode ? '☀️' : '🌙'}
           </button>
+
+          {/* LOGO */}
+          <div className="flex items-center">
+            <Image
+              src="/NES_Logo.png"
+              width={120}
+              height={80}
+              alt="NES Logo"
+              className="object-contain"
+              style={{ width: 'auto', height: '60px' }} // Adjusted height to fit header nicely
+            />
+          </div>
         </div>
       </div>
 

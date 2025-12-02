@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     const isValid = predictedItem.trim().toLowerCase() === trueName.trim().toLowerCase();
-
+    
     if (!isValid) {
       return NextResponse.json({ 
         error: `Incorrect Prediction. You guessed '${predictedItem}', but the item is a '${trueName}'.` 
