@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma, RoundStatus } from '@prisma/client';
 
+const MINIMUM_BIDS: Record<string, number> = {
+  "bamboo": 5000,
+  "barrel": 3000,
+  "tyre_tube": 4000,
+  "string_rope": 1000,
+  "jute_rope": 2000,
+  "ladder": 5000,
+  "oars": 6500,
+  "default": 10 
+};
+
 export async function POST(request: NextRequest) {
   try {
     const apiKey = request.headers.get('x-auction-key');
@@ -24,20 +35,37 @@ export async function POST(request: NextRequest) {
 
     const currentRound = await prisma.round.findFirst({
       where: { status: RoundStatus.OPEN },
-      include: { itemImage: { include: { category: true } } }
+      include: {
+        itemImage: {
+          include: {
+            category: true 
+          }
+        }
+      }
     });
 
     if (!currentRound) return NextResponse.json({ error: 'No round open' }, { status: 400 });
     
-    if (!currentRound.itemImage?.category?.name) {
-         return NextResponse.json({ error: 'System Error: Current round has no category' }, { status: 500 });
+    if (!currentRound.itemImage?.category) {
+         return NextResponse.json({ error: 'System Error: Data missing' }, { status: 500 });
     }
 
     const trueName = currentRound.itemImage.category.name;
+
     if (predictedItem.trim().toLowerCase() !== trueName.trim().toLowerCase()) {
       return NextResponse.json({ 
         error: `Incorrect Prediction. You guessed '${predictedItem}', but the item is a '${trueName}'.` 
       }, { status: 400 });
+    }
+
+    const normalizedItemName = trueName.trim().toLowerCase();
+    
+    const requiredMinBid = MINIMUM_BIDS[normalizedItemName] || MINIMUM_BIDS["default"];
+    
+    if (bidAmount < requiredMinBid) {
+        return NextResponse.json({ 
+            error: `Bid Too Low. The minimum bid for '${trueName}' is strictly set to $${requiredMinBid}.` 
+        }, { status: 400 });
     }
 
     const newBid = await prisma.bid.create({
