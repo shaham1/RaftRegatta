@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RaftRegatta Auction",
+  title: "Raft Regatta Auction",
   description: "Raft Regatta AI Auction",
 };
 

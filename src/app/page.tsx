@@ -187,17 +187,9 @@ export default function AuctionDashboard() {
 
         {/* RIGHT: THEME TOGGLE & LOGO */}
         <div className="flex items-center gap-6 z-20">
-          {/* THEME TOGGLE */}
-          <button 
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-2 rounded-full border ${theme.border} hover:scale-110 transition-transform`}
-            title="Toggle Theme"
-          >
-            {isDarkMode ? '☀️' : '🌙'}
-          </button>
 
           {/* LOGO */}
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
             <Image
               src="/NES_Logo.png"
               width={120}
@@ -206,7 +198,31 @@ export default function AuctionDashboard() {
               className="object-contain"
               style={{ width: 'auto', height: '60px' }} // Adjusted height to fit header nicely
             />
+              <Image
+                src="/board_logo.jpg"
+                width={80}
+                height={60}
+                alt="NES Logo"
+                className="object-contain"
+                style={{ width: 'auto', height: '60px' }} // Adjusted height to fit header nicely
+              />
+            <Image
+              src="/regatta_logo.png"
+              width={120}
+              height={80}
+              alt="NES Logo"
+              className="object-contain"
+              style={{ width: 'auto', height: '60px' }} // Adjusted height to fit header nicely
+            />
           </div>
+          {/* THEME TOGGLE */}
+          <button 
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-2 rounded-full border ${theme.border} hover:scale-110 transition-transform`}
+            title="Toggle Theme"
+          >
+            {isDarkMode ? '☀️' : '🌙'}
+          </button>
         </div>
       </div>
 
