@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import Image from 'next/image';
 
 // --- Configuration ---
-const ROUND_DURATION_MINUTES = 0.5;
+const ROUND_DURATION_MINUTES = 1.5;
 const ROUND_DURATION_MS = ROUND_DURATION_MINUTES * 60 * 1000;
 
 // --- Types ---
@@ -155,7 +155,7 @@ export default function AuctionDashboard() {
       }, 1000);
       return () => clearInterval(timer);
     } else {
-      setElapsedTime("00:10");
+      setElapsedTime("01:30");
     }
   }, [currentRound, handleStartRound]);
 
