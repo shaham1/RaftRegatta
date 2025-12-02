@@ -3,26 +3,32 @@ import { prisma } from '@/lib/prisma';
 import { RoundStatus } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
-
-  // also add administrator authentication
-
   try {
     await prisma.round.updateMany({
       where: { status: RoundStatus.OPEN },
       data: { status: RoundStatus.CLOSED, endTime: new Date() }
     });
 
-    const imageCount = await prisma.itemImage.count();
-    
+    const whereClause = {
+      rounds: {
+        none: {} 
+      }
+    };
+
+    const imageCount = await prisma.itemImage.count({ where: whereClause });
+
     if (imageCount === 0) {
-      return NextResponse.json({ error: 'No images found in database' }, { status: 500 });
+      return NextResponse.json({ 
+        error: 'GAME OVER: All images in the database have been used!' 
+      }, { status: 500 });
     }
 
     const skip = Math.floor(Math.random() * imageCount);
     
     const randomImage = await prisma.itemImage.findFirst({
+      where: whereClause,
       skip: skip,
-      include: { category: true } 
+      include: { category: true }
     });
 
     if (!randomImage) {
@@ -38,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Random Round Started',
+      message: 'New Unique Round Started',
       round_id: newRound.id,
       active_category: randomImage.category.name,
       active_image_id: randomImage.id

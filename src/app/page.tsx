@@ -1,7 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import Image from 'next/image';
+
+// --- Configuration ---
+const ROUND_DURATION_MINUTES = 0.5;
+const ROUND_DURATION_MS = ROUND_DURATION_MINUTES * 60 * 1000;
 
 // --- Types ---
 type Bid = {
@@ -27,16 +31,19 @@ type HistoryItem = Bid & {
 };
 
 export default function AuctionDashboard() {
-  // --- State ---
+  // --- State ---  
   const [currentRound, setCurrentRound] = useState<RoundInfo | null>(null);
   const [liveBids, setLiveBids] = useState<Bid[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   
-  const [elapsedTime, setElapsedTime] = useState<string>("00:00");
+  const [elapsedTime, setElapsedTime] = useState<string>("05:00");
   const [statusMessage, setStatusMessage] = useState<string>('System Ready');
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true); // Default to Dark Mode
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  
+  // Ref to prevent double-firing the auto-start
+  const isStartingRef = useRef(false);
 
-  // --- API Actions (Logic Unchanged) ---
+  // --- API Actions ---
 
   const checkStatus = useCallback(async () => {
     try {
@@ -62,8 +69,11 @@ export default function AuctionDashboard() {
     }
   }, []);
 
-  const handleStartRound = async () => {
-    setStatusMessage("Starting Round...");
+  const handleStartRound = useCallback(async () => {
+    if (isStartingRef.current) return;
+    isStartingRef.current = true;
+
+    setStatusMessage("Initializing Auto-Round...");
     try {
       const res = await fetch('/api/admin/start_round', {
         method: 'POST',
@@ -84,11 +94,15 @@ export default function AuctionDashboard() {
         setLiveBids([]); 
       } else {
         setStatusMessage(`Error: ${data.error}`);
+        // If error (e.g., no images left), we stop the auto-loop by not updating round status
+        setCurrentRound(prev => prev ? { ...prev, status: 'ERROR' } : null);
       }
     } catch (error) {
       setStatusMessage("Network Error");
+    } finally {
+      isStartingRef.current = false;
     }
-  };
+  }, []);
 
   const handleCloseRound = async () => {
     setStatusMessage("Closing Round...");
@@ -119,22 +133,31 @@ export default function AuctionDashboard() {
     return Object.values(roundsMap).sort((a, b) => b.roundId - a.roundId);
   }, [history]);
 
+  // --- Timer & Auto-Loop Logic ---
   useEffect(() => {
     if (currentRound?.status === 'OPEN') {
       const timer = setInterval(() => {
         const start = new Date(currentRound.start_time).getTime();
         const now = new Date().getTime();
-        const diff = Math.floor((now - start) / 1000);
+        const targetEnd = start + ROUND_DURATION_MS;
+        const diff = targetEnd - now;
         
-        const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
-        const seconds = (diff % 60).toString().padStart(2, '0');
-        setElapsedTime(`${minutes}:${seconds}`);
+        if (diff <= 0) {
+          // Timer finished! Start next round automatically.
+          setElapsedTime("00:30");
+          clearInterval(timer);
+          handleStartRound();
+        } else {
+          const minutes = Math.floor(diff / 60000).toString().padStart(2, '0');
+          const seconds = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+          setElapsedTime(`${minutes}:${seconds}`);
+        }
       }, 1000);
       return () => clearInterval(timer);
     } else {
-      setElapsedTime("00:00");
+      setElapsedTime("00:10");
     }
-  }, [currentRound]);
+  }, [currentRound, handleStartRound]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -151,7 +174,7 @@ export default function AuctionDashboard() {
     border: isDarkMode ? 'border-zinc-800' : 'border-gray-300',
     text: isDarkMode ? 'text-gray-200' : 'text-gray-800',
     subText: isDarkMode ? 'text-gray-500' : 'text-gray-500',
-    accent: 'text-red-600', // Our primary Red
+    accent: 'text-red-600', 
     accentBg: 'bg-red-600',
     buttonPrimary: 'bg-red-600 hover:bg-red-500 text-white shadow-red-900/20',
     buttonDisabled: isDarkMode ? 'bg-zinc-800 text-zinc-600' : 'bg-gray-200 text-gray-400',
@@ -175,10 +198,10 @@ export default function AuctionDashboard() {
           <p className={`text-xs ${theme.subText} mt-1 font-bold`}>STATUS: {statusMessage}</p>
         </div>
         
-        {/* CENTER: TIMER (Absolute Positioning for perfect centering) */}
+        {/* CENTER: TIMER (Absolute Positioning) */}
         <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
           <div className={`flex flex-col items-center justify-center px-6 py-2 rounded border ${theme.border} ${isDarkMode ? 'bg-black' : 'bg-gray-50'}`}>
-             <span className={`text-[10px] ${theme.subText} uppercase tracking-widest`}>Round Timer</span>
+             <span className={`text-[10px] ${theme.subText} uppercase tracking-widest`}>Next Round In</span>
              <span className={`text-3xl font-bold font-mono ${currentRound?.status === 'OPEN' ? theme.accent : theme.subText}`}>
                {elapsedTime}
              </span>
@@ -188,34 +211,32 @@ export default function AuctionDashboard() {
         {/* RIGHT: THEME TOGGLE & LOGO */}
         <div className="flex items-center gap-6 z-20">
 
-          {/* LOGO */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center">
             <Image
               src="/NES_Logo.png"
               width={120}
               height={80}
-              alt="NES Logo"
+              alt="NES logo px-2"
               className="object-contain"
-              style={{ width: 'auto', height: '60px' }} // Adjusted height to fit header nicely
+              style={{ width: 'auto', height: '60px' }}
             />
-              <Image
-                src="/board_logo.jpg"
-                width={80}
-                height={60}
-                alt="NES Logo"
-                className="object-contain"
-                style={{ width: 'auto', height: '60px' }} // Adjusted height to fit header nicely
-              />
+            <Image
+              src="/board_logo.jpg"
+              width={120}
+              height={80}
+              alt="board logo"
+              className="object-contain px-2"
+              style={{ width: 'auto', height: '60px' }}
+            />
             <Image
               src="/regatta_logo.png"
               width={120}
               height={80}
-              alt="NES Logo"
-              className="object-contain"
-              style={{ width: 'auto', height: '60px' }} // Adjusted height to fit header nicely
+              alt="regatta logo"
+              className="object-contain px-2"
+              style={{ width: 'auto', height: '60px' }}
             />
           </div>
-          {/* THEME TOGGLE */}
           <button 
             onClick={() => setIsDarkMode(!isDarkMode)}
             className={`p-2 rounded-full border ${theme.border} hover:scale-110 transition-transform`}
@@ -228,7 +249,7 @@ export default function AuctionDashboard() {
 
       <main className="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* LEFT COLUMN: CONTROLS & LIVE FEED (Width: 8/12) */}
+        {/* LEFT COLUMN: CONTROLS & LIVE FEED */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           
           {/* CONTROL PANEL */}
@@ -251,7 +272,7 @@ export default function AuctionDashboard() {
                     : theme.buttonPrimary
                   }`}
                 >
-                  START ROUND
+                  START LOOP
                 </button>
                 <button 
                   onClick={handleCloseRound}
@@ -262,7 +283,7 @@ export default function AuctionDashboard() {
                     : 'bg-zinc-700 hover:bg-zinc-600 text-white'
                   }`}
                 >
-                  CLOSE ROUND
+                  STOP LOOP
                 </button>
              </div>
           </div>
@@ -307,7 +328,7 @@ export default function AuctionDashboard() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: WINNERS HISTORY (Width: 4/12) */}
+        {/* RIGHT COLUMN: WINNERS HISTORY */}
         <div className={`lg:col-span-4 ${theme.cardBg} rounded-none border ${theme.border} flex flex-col overflow-hidden h-full`}>
           <div className={`p-4 border-b ${theme.border}`}>
             <h2 className={`text-lg font-bold ${theme.text}`}>🏆 HALL OF FAME</h2>
