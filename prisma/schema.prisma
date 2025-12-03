@@ -32,7 +32,7 @@ model Teams {
   id       Int @id @default(autoincrement())
   teamNo   String    @unique
   teamName String
-  budget Float @default(50000)
+  budget Float @default(100000)
   apiKey   String @unique
 }
 
