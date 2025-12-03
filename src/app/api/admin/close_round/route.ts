@@ -8,7 +8,7 @@ export async function POST() {
       where: { status: RoundStatus.OPEN },
       include: {
         bids: {
-          orderBy: { amount: 'desc' }, 
+          orderBy: { amount: 'desc' },
           take: 1
         }
       }
@@ -18,35 +18,28 @@ export async function POST() {
       return NextResponse.json({ message: 'No open rounds to close.' }, { status: 200 });
     }
 
-    let winnerMessage = "No bids placed.";
-    
+    let msg = "No bids.";
+
     if (activeRound.bids.length > 0) {
       const winningBid = activeRound.bids[0];
       
       await prisma.teams.update({
         where: { teamNo: winningBid.teamNo },
         data: {
-          budget: {
-            decrement: winningBid.amount
-          }
+          budget: { decrement: winningBid.amount }
         }
       });
-      
-      winnerMessage = `Winner: ${winningBid.teamName} ($${winningBid.amount})`;
+      msg = `Winner: ${winningBid.teamName} (-$${winningBid.amount})`;
     }
 
     await prisma.round.update({
       where: { id: activeRound.id },
-      data: { 
-        status: RoundStatus.CLOSED, 
-        endTime: new Date() 
-      }
+      data: { status: RoundStatus.CLOSED, endTime: new Date() }
     });
 
     return NextResponse.json({ 
       success: true, 
-      message: `Round Closed. ${winnerMessage}`,
-      round_id: activeRound.id
+      message: `Round Closed. ${msg}`
     });
 
   } catch (error) {
@@ -54,4 +47,3 @@ export async function POST() {
     return NextResponse.json({ error: 'Failed to close round' }, { status: 500 });
   }
 }
-
